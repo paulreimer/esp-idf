@@ -73,6 +73,17 @@ static esp_err_t select_image (esp_image_metadata_t *image_data)
     return ESP_OK;
 }
 
+// Entrypoint to override boot partition that would be selected
+__attribute__((weak)) int override_selected_boot_partition(int boot_index)
+{
+    // Check for reset to the factory firmware or for launch OTA[x] firmware.
+    // Customer implementation.
+    // if (gpio_pin_1 == true && ...){
+    //     boot_index = required_boot_partition;
+    // } ...
+    return boot_index;
+}
+
 /*
  * Selects a boot partition.
  * The conditions for switching to another firmware are checked.
@@ -83,11 +94,7 @@ static int selected_boot_partition(const bootloader_state_t *bs)
     if (boot_index == INVALID_INDEX) {
         return boot_index; // Unrecoverable failure (not due to corrupt ota data or bad partition contents)
     } else {
-        // Check for reset to the factory firmware or for launch OTA[x] firmware.
-        // Customer implementation.
-        // if (gpio_pin_1 == true && ...){
-        //     boot_index = required_boot_partition;
-        // } ...
+        return override_selected_boot_partition(boot_index);
     }
     return boot_index;
 }
